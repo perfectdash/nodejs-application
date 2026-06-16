@@ -20,6 +20,11 @@ jobs:
           script: |
             set -e
 
+            if [ -d "nodejs-application" ]; then
+              echo "Repository already exists. Removing..."
+              rm -rf nodejs-application
+            fi
+
             echo "================================"
             echo "Preparing repository..."
             echo "================================"
@@ -33,7 +38,14 @@ jobs:
             echo "Building Docker image..."
             echo "================================"
             
-            docker build -f DockerFile -t nodejs-app . 
+            docker build -f DockerFile -t nodejs-app .
+            
+            
+            echo "================================"
+            echo "Cleanup complete!"
+            echo "================================"
+
+            rm -rf nodejs-application 
 
             docker stop nodejs-app-container || true
             docker rm nodejs-app-container || true
@@ -45,11 +57,7 @@ jobs:
             docker run -d -p 3000:3000 --name nodejs-app-container nodejs-app
 
 
-            echo "================================"
-            echo "Cleanup complete!"
-            echo "================================"
-
-            rm -rf nodejs-application
+            
 
 
             
