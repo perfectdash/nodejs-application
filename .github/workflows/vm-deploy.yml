@@ -18,13 +18,34 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
+            set -e
 
-            echo "===== Pulling Latest Code ====="
+            echo "================================"
+            echo "Cloning repository..."
+            echo "================================"
 
-            echo "Done the SSH connection and pulling the latest code from the repository." > /tmp/deploy.log
+            git clone https://github.com/perfectdash/nodejs-application.git
 
-            echo ${{ secrets.SERVER_IP }} >> /tmp/deploy.log
-            echo ${{ secrets.SERVER_USER }} >> /tmp/deploy.log
-            echo ${{ secrets.SSH_PRIVATE_KEY }} >> /tmp/deploy.log
+
+            cd nodejs-application
+
+            echo "================================"
+            echo "Building Docker image..."
+            echo "================================"
             
-            echo "===== Deployment Complete ====="
+            docker build -t nodejs-app . 
+            
+
+            echo "================================"
+            echo "Running Docker container..."
+            echo "================================"
+
+            docker run -d -p 3000:3000 --name nodejs-app-container nodejs-app
+
+            echo "================================"
+            echo "File Cleanup thing ... "
+            echo "================================"
+
+            rm -rf nodejs-application
+            
+
