@@ -33,7 +33,7 @@ jobs:
             echo "Building Docker image..."
             echo "================================"
             
-            docker build -t nodejs-app . 
+            docker build -f DockerFile -t nodejs-app . 
             
 
             echo "================================"
