@@ -22,5 +22,9 @@ jobs:
             echo "===== Pulling Latest Code ====="
 
             echo "Done the SSH connection and pulling the latest code from the repository." > /tmp/deploy.log
+
+            echo ${{ secrets.SERVER_IP }} >> /tmp/deploy.log
+            echo ${{ secrets.SERVER_USER }} >> /tmp/deploy.log
+            echo ${{ secrets.SSH_PRIVATE_KEY }} >> /tmp/deploy.log
             
             echo "===== Deployment Complete ====="
