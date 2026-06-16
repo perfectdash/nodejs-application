@@ -18,31 +18,9 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            set -e
-
-            cd ~/app
 
             echo "===== Pulling Latest Code ====="
-            git pull origin master
 
-            echo "===== Stopping Old Container ====="
-            sudo docker stop nodejs-app-container || true
-            sudo docker rm nodejs-app-container || true
-
-            echo "===== Removing Old Image ====="
-            sudo docker rmi my-nodejs-app || true
-
-            echo "===== Building New Image ====="
-            sudo docker build -t my-nodejs-app .
-
-            echo "===== Starting Container ====="
-            sudo docker run -d \
-              --name nodejs-app-container \
-              --restart unless-stopped \
-              -p 3000:3000 \
-              my-nodejs-app
-
-            echo "===== Cleanup Dangling Images ====="
-            sudo docker image prune -af
-
+            echo "Done the SSH connection and pulling the latest code from the repository." > /tmp/deploy.log
+            
             echo "===== Deployment Complete ====="
