@@ -24,12 +24,8 @@ jobs:
             echo "Preparing repository..."
             echo "================================"
 
-            if [ -d "nodejs-application" ]; then
-              echo "Repository already exists, skipping clone."
-            else
-              echo "Cloning repository..."
-              git clone https://github.com/perfectdash/nodejs-application.git
-            fi
+            echo "Cloning repository..."
+            git clone https://github.com/perfectdash/nodejs-application.git
 
             cd nodejs-application
 
@@ -38,13 +34,23 @@ jobs:
             echo "================================"
             
             docker build -f DockerFile -t nodejs-app . 
-            
+
+            docker stop nodejs-app-container || true
+            docker rm nodejs-app-container || true
 
             echo "================================"
             echo "Running Docker container..."
             echo "================================"
 
             docker run -d -p 3000:3000 --name nodejs-app-container nodejs-app
+
+
+            echo "================================"
+            echo "Cleanup complete!"
+            echo "================================"
+
+            rm -rf nodejs-application
+
 
             
 
