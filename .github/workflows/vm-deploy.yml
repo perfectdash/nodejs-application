@@ -3,65 +3,46 @@ name: Deploy Node.js App to VM
 on:
   push:
     branches:
-      - master  # Triggers the deployment when you push to the main branch
+      - master
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository Code
-        uses: actions/checkout@v4
-
-      - name: Deploy to VM via SSH
+      - name: Deploy to VM
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SERVER_IP }}        # Your VM's Public IP address
-          username: ${{ secrets.SERVER_USER }}  # Your VM's SSH username (e.g., taaran9499)
-          key: ${{ secrets.SSH_PRIVATE_KEY }}      # Your private SSH Key (starts with -----BEGIN OPENSSH PRIVATE KEY-----)
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            echo "====================================="
-            echo " Checking Docker Installation...    "
-            echo "====================================="
-            if ! command -v docker &> /dev/null; then
-                echo "Docker not found. Installing..."
-                sudo apt-get update -y
-                sudo apt-get install -y ca-certificates curl gnupg lsb-release
-                sudo mkdir -p /etc/apt/keyrings
-                curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg --yes
-                echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-                sudo apt-get update -y
-                sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-            else
-                echo "Docker is already installed."
-            fi
+            set -e
 
-            echo "====================================="
-            echo " Preparing App Directory...          "
-            echo "====================================="
-            # Create a directory for the app if it doesn't exist and navigate into it
-            mkdir -p ~/app
             cd ~/app
 
-            # In a clean pipeline, you would pull your code or transfer it here. 
-            # For simplicity, we assume your repository files are sync'd or cloned to this folder.
-            
-            echo "====================================="
-            echo " Rebuilding and Running Container... "
-            echo "====================================="
-            # Stop and remove old container if it exists
-            if sudo docker ps -a --format '{{.Names}}' | grep -Eq "^nodejs-app-container$"; then
-                sudo docker stop nodejs-app-container || true
-                sudo docker rm nodejs-app-container || true
-            fi
+            echo "===== Pulling Latest Code ====="
+            git pull origin master
 
-            # Build and Run the new container
+            echo "===== Stopping Old Container ====="
+            sudo docker stop nodejs-app-container || true
+            sudo docker rm nodejs-app-container || true
+
+            echo "===== Removing Old Image ====="
+            sudo docker rmi my-nodejs-app || true
+
+            echo "===== Building New Image ====="
             sudo docker build -t my-nodejs-app .
+
+            echo "===== Starting Container ====="
             sudo docker run -d \
               --name nodejs-app-container \
-              --restart always \
+              --restart unless-stopped \
               -p 3000:3000 \
               my-nodejs-app
 
-            echo "Deployment Complete!"
+            echo "===== Cleanup Dangling Images ====="
+            sudo docker image prune -af
+
+            echo "===== Deployment Complete ====="
