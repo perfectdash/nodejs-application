@@ -15,8 +15,7 @@ const server = http.createServer((req, res) => {
         <title>Simple Node.js App</title>
       </head>
       <body>
-        <h1>Hello from Node.js!</h1>
-        <p>This is a minimal web server running on ${hostname}:${port}.</p>
+        <h1>Mayank bhai pyar ko bhuko</h1>
       </body>
     </html>
   `);
